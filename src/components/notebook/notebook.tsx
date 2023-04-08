@@ -6,6 +6,7 @@ import dedent from "dedent";
 import runCadence from "../../services/flow"
 import {appState} from "~/state";
 import {update, use} from "use-minimal-state";
+import {languages} from "monaco-editor";
 class Cell {
     public language: string
     public content: string
@@ -28,7 +29,6 @@ export default function Notebook({loaderRef}) {
     use(appState, "editor")
 
     const loadNotebook = (code)=>{
-        console.log("load")
         var markdown = code
         markdown = dedent(markdown)
         let cells:Array<Cell> = []
@@ -41,16 +41,12 @@ export default function Notebook({loaderRef}) {
                 cells.push(new Cell({language: "markdown", content: piece.trim()}))
             }
         }
-        console.log(cells.length)
         setCells(cells)
-
         updateNotebook(cells)
     }
 
     loaderRef.current = loadNotebook
     const updateNotebook = (cells)=>{
-
-        console.log("updateNotebook", cells)
         const codes = cells.map((cell:Cell)=>{
             if (cell.language==='cadence'){
                 return "```\n" + cell.content + "\n```"
@@ -63,6 +59,30 @@ export default function Notebook({loaderRef}) {
         update(appState, "editor")
     }
 
+    const addCell = () => {
+        cells.push(new Cell({language: "cadence", content:""}))
+        setCells(cells)
+        updateNotebook(cells)
+    }
+
+    const insertCell = (after:Cell) => {
+        cells.splice(cells.indexOf(after)+1, 0, new Cell({language: "cadence", content:""}));
+        updateNotebook(cells)
+    }
+    const deleteCell = (cell:Cell) => {
+        cells.splice(cells.indexOf(cell), 1);
+        updateNotebook(cells)
+    }
+
+    const changeCellType = (cell:Cell) => {
+        if (cell.language=="cadence"){
+            cell.language = "markdown"
+        }else{
+            cell.language ="cadence"
+        }
+        updateNotebook(cells)
+    }
+
 
     return (
         <div>
@@ -71,6 +91,7 @@ export default function Notebook({loaderRef}) {
                     (cell) => (
                         <div key={cells.indexOf(cell)} onMouseEnter={() => handleMouseEnter(cell)}>
                             <CellView
+                                cell={cell}
                                 hasFocus={selectedCell === cells.indexOf(cell)}
                                 language={cell.language}
                                 updateCell = {(content)=>{
@@ -84,6 +105,10 @@ export default function Notebook({loaderRef}) {
                                     setOldState(result.oldCode)
                                     return {data:result.data, method:result.method}
                                 }}
+                                insertCell={insertCell}
+                                deleteCell={deleteCell}
+                                changeCellType={changeCellType}
+
                                 value={cell.content}/>
                         </div>
                     )
@@ -91,7 +116,7 @@ export default function Notebook({loaderRef}) {
             }
 
             <div style={{marginLeft: "50px"}}>
-                <Link>Add Cell</Link>
+                <Link onClick={addCell}>Add Cell</Link>
             </div>
         </div>
     );

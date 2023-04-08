@@ -54,8 +54,6 @@ export default function Editor({value, language, onChange}) {
 
             },
         });
-        if (!!value.current)
-            editorInstance.setValue(value.current)
 
         editorInstance.onDidContentSizeChange(() => {
             setHeight(Math.max(0, editorInstance.getContentHeight()));
@@ -75,7 +73,7 @@ export default function Editor({value, language, onChange}) {
         };
 
     const onContentChange = (newValue: string, _: editor.IModelContentChangedEvent)=>{
-        value.current = newValue
+        value = newValue
         onChange(newValue)
     }
 
@@ -103,7 +101,7 @@ export default function Editor({value, language, onChange}) {
                 }}
                 editorDidMount={(e, m: any) => editorDidMount(e, m)}
                 onChange={(newVal, e) => onContentChange(newVal, e)}
-
+                value={value}
             >
             </MonacoEditor>
     );

@@ -1,7 +1,7 @@
 import React, {useRef, useState} from 'react';
 import Editor from "@components/notebook/editor/editor";
 import Stack from "@components/notebook/stack";
-import {Code, PlayCircle, Plus, Type} from 'react-bootstrap-icons';
+import {Code, CodeSquare, NintendoSwitch, PlayCircle, Plus, PlusCircle, Trash, Type} from 'react-bootstrap-icons';
 import {Repeat} from 'react-bootstrap-icons';
 import remarkBreaks from 'remark-breaks'
 
@@ -12,14 +12,18 @@ import {use} from "use-minimal-state";
 import {appState} from "~/state";
 
 
-export default function Cell({value, language, hasFocus, updateCell, runCell} ) {
+export default function Cell({cell, value, language, hasFocus, updateCell, runCell, insertCell, deleteCell,changeCellType} ) {
     const [logs, setLogs] = useState([])
     const [isCode, setIsCode] = useState<boolean>(false)
-    const content = useRef<string>(value)
     const settings = use(appState, "settings")
 
     // @ts-ignore
     const addLog = (log) => setLogs(currLogs => [...currLogs, log])
+
+    const plusClicked = ()=> insertCell(cell)
+    const trashClicked = ()=> deleteCell(cell)
+    const changeClicked = ()=> changeCellType(cell)
+
 
     /*
     type Methods =
@@ -45,14 +49,14 @@ export default function Cell({value, language, hasFocus, updateCell, runCell} ) 
                             <Link>
                                 {logs.length > 0 && <Repeat onClick={async () => {
                                     setLogs([])
-                                    const r = await runCell(content.current)
+                                    const r = await runCell(value)
                                     addLog(r)
                                 }}/>
                                 }
                                 {logs.length === 0 && <PlayCircle
                                     onClick={async () => {
                                         setLogs([])
-                                        const r = await runCell(content.current)
+                                        const r = await runCell(value)
                                         addLog(r)
                                     }}/>
                                 }
@@ -88,7 +92,8 @@ export default function Cell({value, language, hasFocus, updateCell, runCell} ) 
                         width: '90%',
 
                     }}>
-                        <Editor onChange={(content)=>updateCell(content)} value={content} language={language}/>
+                        <Editor onChange={(content)=>updateCell(content)} value={value} language={language}/>
+
 
                         {logs.length > 0 && <div style={{
                             marginTop: '5px',
@@ -112,10 +117,10 @@ export default function Cell({value, language, hasFocus, updateCell, runCell} ) 
                         margin: '0',
                         width: '90%',
                     }}>
-                        {isCode && <Editor onChange={(content)=>updateCell(content)} value={content} language={language}/>}
+                        {isCode && <Editor onChange={(content)=>updateCell(content)} value={value} language={language}/>}
                         {!isCode &&
                             <ReactMarkdown remarkPlugins={[remarkBreaks]}>
-                                {content.current}
+                                {value}
                             </ReactMarkdown>
                         }
                     </div>
@@ -131,9 +136,16 @@ export default function Cell({value, language, hasFocus, updateCell, runCell} ) 
             </Stack>
 
             {hasFocus &&
-                <div style={{color: "#999", width: '90%',  marginLeft: "50px"}}>
-                    <Link>
-                        <Plus/>
+                <div style={{textAlign:"right", color: "#999", width: '90%',  marginLeft: "50px"}}>
+                    <Link style={{marginLeft:10}} onClick={plusClicked}>
+                        <PlusCircle/>
+                    </Link>
+                    <Link  style={{marginLeft:10}} onClick={trashClicked}>
+                        <Trash/>
+                    </Link>
+
+                    <Link  style={{marginLeft:10}} onClick={changeClicked}>
+                        <CodeSquare/>
                     </Link>
 
                 </div>
