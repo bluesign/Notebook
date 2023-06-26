@@ -123,10 +123,10 @@ function cadenceValueToDict(payload, brief): any {
     }
 
 
-    if (codeToRun.startsWith("#!print")){
+    if (codeToRun.startsWith("#print")){
         codeWrapped = `
         if true{
-           return ${codeToRun.substring(7)} as AnyStruct
+           return ${codeToRun.substring(6)} as AnyStruct
         }
      `
         shouldSave = false
